@@ -54,6 +54,15 @@ export async function errorCode(res: Response) {
   return body.error.code;
 }
 
+/** Reads the stored row straight from D1 to prove what was (or was not) written. */
+export const storedVehicle = (id: number) =>
+  env.DB.prepare(
+    `SELECT id, dealership_id, make, model, year, status, version, updated_at, updated_by
+       FROM vehicles WHERE id = ?`,
+  )
+    .bind(id)
+    .first();
+
 export const sessionCount = async (userId: number) =>
   (await env.DB.prepare('SELECT COUNT(*) AS n FROM sessions WHERE user_id = ?')
     .bind(userId)

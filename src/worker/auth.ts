@@ -111,3 +111,11 @@ export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
   c.set('user', toSessionUser(row));
   await next();
 });
+
+/** Must run after requireAuth: the role comes from the session, not the request. */
+export const requireAdmin = createMiddleware<AppEnv>(async (c, next) => {
+  if (c.var.user.role !== 'admin') {
+    throw new ApiError(403, 'FORBIDDEN', 'Only administrators can edit vehicles.');
+  }
+  await next();
+});

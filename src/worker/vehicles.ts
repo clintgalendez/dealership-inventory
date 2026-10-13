@@ -36,6 +36,51 @@ export async function listVehicles(db: D1Database, dealershipId: number): Promis
   return results.map(toVehicle);
 }
 
+export type VehicleUpdate = {
+  make: string;
+  model: string;
+  year: number;
+  status: VehicleStatus;
+  /** The version the client loaded; the update only applies if it is still current. */
+  version: number;
+};
+
+export type UpdateResult = Vehicle | 'not_found' | 'conflict';
+
+export async function updateVehicle(
+  db: D1Database,
+  user: { id: number; dealershipId: number },
+  id: number,
+  input: VehicleUpdate,
+): Promise<UpdateResult> {
+  // Compare-and-set in one statement. SQLite evaluates the WHERE clause (including the
+  // version) and applies the SET as a single atomic write, and D1 serializes writes, so two
+  // requests holding the same version can never both match: the second sees version + 1.
+  const row = await db
+    .prepare(
+      `UPDATE vehicles
+          SET make = ?, model = ?, year = ?, status = ?, version = version + 1,
+              updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), updated_by = ?
+        WHERE id = ? AND dealership_id = ? AND version = ?
+    RETURNING ${COLUMNS}`,
+    )
+    .bind(
+      input.make,
+      input.model,
+      input.year,
+      input.status,
+      user.id,
+      id,
+      user.dealershipId,
+      input.version,
+    )
+    .first<VehicleRow>();
+  if (row) return toVehicle(row);
+
+  // Nothing was written. A read-only lookup decides which response explains why.
+  return (await getVehicle(db, user.dealershipId, id)) ? 'conflict' : 'not_found';
+}
+
 export async function getVehicle(
   db: D1Database,
   dealershipId: number,
