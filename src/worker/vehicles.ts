@@ -36,6 +36,49 @@ export async function listVehicles(db: D1Database, dealershipId: number): Promis
   return results.map(toVehicle);
 }
 
+export type VehicleUpdate = {
+  make: string;
+  model: string;
+  year: number;
+  status: VehicleStatus;
+  /** The version the client loaded; the update only applies if it is still current. */
+  version: number;
+};
+
+export type UpdateResult = Vehicle | 'not_found' | 'conflict';
+
+export async function updateVehicle(
+  db: D1Database,
+  user: { id: number; dealershipId: number },
+  id: number,
+  input: VehicleUpdate,
+): Promise<UpdateResult> {
+  const current = await getVehicle(db, user.dealershipId, id);
+  if (!current) return 'not_found';
+  if (current.version !== input.version) return 'conflict';
+
+  await db
+    .prepare(
+      `UPDATE vehicles
+          SET make = ?, model = ?, year = ?, status = ?, version = ?,
+              updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), updated_by = ?
+        WHERE id = ? AND dealership_id = ?`,
+    )
+    .bind(
+      input.make,
+      input.model,
+      input.year,
+      input.status,
+      input.version + 1,
+      user.id,
+      id,
+      user.dealershipId,
+    )
+    .run();
+
+  return (await getVehicle(db, user.dealershipId, id))!;
+}
+
 export async function getVehicle(
   db: D1Database,
   dealershipId: number,

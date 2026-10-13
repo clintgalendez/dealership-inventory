@@ -7,6 +7,7 @@ import {
   type AppEnv,
   createSession,
   destroySession,
+  requireAdmin,
   requireAuth,
   toSessionUser,
   USER_COLUMNS,
@@ -14,7 +15,7 @@ import {
 } from './auth';
 import { ApiError, parseBody } from './errors';
 import { verifyPassword } from './password';
-import { getVehicle, listVehicles } from './vehicles';
+import { getVehicle, listVehicles, updateVehicle, VEHICLE_STATUSES } from './vehicles';
 
 // Verified when the email is unknown so both failure paths cost the same PBKDF2 work
 // and response timing does not reveal which emails exist.
@@ -25,6 +26,17 @@ const loginSchema = z.object({
   email: z.string().trim().max(254),
   password: z.string().min(1).max(200),
 });
+
+// .strict() rejects anything else (e.g. dealershipId or id) instead of silently ignoring it.
+const vehicleUpdateSchema = z
+  .object({
+    make: z.string().trim().min(1).max(50),
+    model: z.string().trim().min(1).max(50),
+    year: z.number().int().min(1900).max(2100),
+    status: z.enum(VEHICLE_STATUSES),
+    version: z.number().int().positive(),
+  })
+  .strict();
 
 // Same response for "does not exist" and "belongs to another dealership" so ids cannot be probed.
 const vehicleNotFound = () => new ApiError(404, 'NOT_FOUND', 'Vehicle not found.');
@@ -73,6 +85,22 @@ app.get('/api/vehicles/:id{[0-9]+}', requireAuth, async (c) => {
   const vehicle = await getVehicle(c.env.DB, c.var.user.dealershipId, Number(c.req.param('id')));
   if (!vehicle) throw vehicleNotFound();
   return c.json({ vehicle });
+});
+
+// PUT: the client always sends every editable field plus the version it loaded.
+// Order of checks: 401 (requireAuth) -> 403 (requireAdmin) -> 400 (body) -> 404 / 409.
+app.put('/api/vehicles/:id{[0-9]+}', requireAuth, requireAdmin, async (c) => {
+  const input = await parseBody(c, vehicleUpdateSchema);
+  const result = await updateVehicle(c.env.DB, c.var.user, Number(c.req.param('id')), input);
+  if (result === 'not_found') throw vehicleNotFound();
+  if (result === 'conflict') {
+    throw new ApiError(
+      409,
+      'VERSION_CONFLICT',
+      'This vehicle was changed by someone else after you loaded it. Refresh to load the latest version, then reapply your changes.',
+    );
+  }
+  return c.json({ vehicle: result });
 });
 
 app.notFound((c) => c.json({ error: { code: 'NOT_FOUND', message: 'Route not found.' } }, 404));
