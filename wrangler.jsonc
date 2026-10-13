@@ -17,6 +17,10 @@
       "migrations_dir": "migrations"
     }
   ],
+  "vars": {
+    // Absolute session lifetime. Lower it locally (.dev.vars) to demo expiry.
+    "SESSION_TTL_SECONDS": "28800"
+  },
   "observability": {
     "enabled": true
   }
