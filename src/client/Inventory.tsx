@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api, ApiError, errorMessage, type User, type Vehicle } from './api';
+import { api, errorMessage, isSessionEnded, type User, type Vehicle } from './api';
+import VehicleEditForm from './VehicleEditForm';
 
 type Props = { user: User; onLoggedOut: () => void };
 
 export default function Inventory({ user, onLoggedOut }: Props) {
   const [vehicles, setVehicles] = useState<Vehicle[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const isAdmin = user.role === 'admin';
 
   const load = useCallback(
     () =>
@@ -16,8 +20,7 @@ export default function Inventory({ user, onLoggedOut }: Props) {
           setError(null);
         },
         (err: unknown) => {
-          // 401s are handled globally by returning to the login screen.
-          if (!(err instanceof ApiError && err.status === 401)) setError(errorMessage(err));
+          if (!isSessionEnded(err)) setError(errorMessage(err));
         },
       ),
     [],
@@ -27,10 +30,30 @@ export default function Inventory({ user, onLoggedOut }: Props) {
     load();
   }, [load]);
 
+  // Keeps the table in step with whatever version the edit form last loaded or saved.
+  const replaceRow = useCallback(
+    (vehicle: Vehicle) =>
+      setVehicles((list) => list && list.map((v) => (v.id === vehicle.id ? vehicle : v))),
+    [],
+  );
+
   function retry() {
     setError(null);
     setVehicles(null);
     load();
+  }
+
+  function startEdit(id: number) {
+    setSaved(null);
+    setEditingId(id);
+  }
+
+  function handleSaved(vehicle: Vehicle) {
+    replaceRow(vehicle);
+    setEditingId(null);
+    setSaved(
+      `Saved ${vehicle.year} ${vehicle.make} ${vehicle.model} (now version v${vehicle.version}).`,
+    );
   }
 
   async function handleLogout() {
@@ -52,9 +75,7 @@ export default function Inventory({ user, onLoggedOut }: Props) {
         </div>
         <div className="who">
           <span>{user.name}</span>
-          <span className={`badge role-${user.role}`}>
-            {user.role === 'admin' ? 'Administrator' : 'Viewer'}
-          </span>
+          <span className={`badge role-${user.role}`}>{isAdmin ? 'Administrator' : 'Viewer'}</span>
           <button type="button" className="secondary" onClick={handleLogout} disabled={loggingOut}>
             {loggingOut ? 'Signing out…' : 'Log out'}
           </button>
@@ -73,7 +94,23 @@ export default function Inventory({ user, onLoggedOut }: Props) {
           </div>
         )}
 
-        {user.role === 'viewer' && <p className="muted">You have read-only access.</p>}
+        {saved && (
+          <p className="success" role="status">
+            {saved}
+          </p>
+        )}
+
+        {!isAdmin && <p className="muted">You have read-only access.</p>}
+
+        {editingId !== null && (
+          <VehicleEditForm
+            key={editingId}
+            vehicleId={editingId}
+            onLoaded={replaceRow}
+            onSaved={handleSaved}
+            onClose={() => setEditingId(null)}
+          />
+        )}
 
         {vehicles === null && !error && <p aria-busy="true">Loading vehicles…</p>}
 
@@ -88,6 +125,7 @@ export default function Inventory({ user, onLoggedOut }: Props) {
                   <th>Status</th>
                   <th>Version</th>
                   <th>Last updated</th>
+                  {isAdmin && <th aria-label="Actions" />}
                 </tr>
               </thead>
               <tbody>
@@ -101,6 +139,18 @@ export default function Inventory({ user, onLoggedOut }: Props) {
                     </td>
                     <td>v{v.version}</td>
                     <td>{new Date(v.updatedAt).toLocaleString()}</td>
+                    {isAdmin && (
+                      <td>
+                        <button
+                          type="button"
+                          className="secondary"
+                          onClick={() => startEdit(v.id)}
+                          aria-label={`Edit ${v.year} ${v.make} ${v.model}`}
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

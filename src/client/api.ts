@@ -20,6 +20,11 @@ export type Vehicle = {
   updatedAt: string;
 };
 
+/** Editable fields plus the version the edit started from. */
+export type VehicleUpdate = Pick<Vehicle, 'make' | 'model' | 'year' | 'status' | 'version'>;
+
+export const VEHICLE_STATUSES: VehicleStatus[] = ['available', 'reserved', 'sold'];
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
@@ -71,10 +76,16 @@ async function request<T>(path: string, method = 'GET', body?: unknown): Promise
 export const errorMessage = (error: unknown) =>
   error instanceof ApiError ? error.message : 'Something went wrong. Try again.';
 
+/** 401s are already handled globally by returning to the login screen. */
+export const isSessionEnded = (error: unknown) => error instanceof ApiError && error.status === 401;
+
 export const api = {
   me: () => request<{ user: User }>('/api/auth/me'),
   login: (email: string, password: string) =>
     request<{ user: User }>('/api/auth/login', 'POST', { email, password }),
   logout: () => request<void>('/api/auth/logout', 'POST'),
   listVehicles: () => request<{ vehicles: Vehicle[] }>('/api/vehicles'),
+  getVehicle: (id: number) => request<{ vehicle: Vehicle }>(`/api/vehicles/${id}`),
+  updateVehicle: (id: number, input: VehicleUpdate) =>
+    request<{ vehicle: Vehicle }>(`/api/vehicles/${id}`, 'PUT', input),
 };
