@@ -7,6 +7,13 @@ updates:
     groups:
       npm-dependencies:
         patterns: ['*']
+    ignore:
+      # @cloudflare/vitest-plugin 1.4 cannot start tests under Vitest 5 (see README).
+      - dependency-name: vitest
+        update-types: ['version-update:semver-major']
+      # typescript-eslint supports TypeScript < 6.1.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
   - package-ecosystem: github-actions
     directory: /
     schedule:
