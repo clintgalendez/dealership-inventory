@@ -46,6 +46,9 @@ const app = new Hono<AppEnv>();
 app.use('/api/*', secureHeaders(), csrf(), async (c, next) => {
   await next();
   c.header('Cache-Control', 'no-store');
+  // Requests rejected before their body is parsed (401/403) must still release it; otherwise
+  // the local runtime breaks the next request on the same keep-alive connection.
+  if (c.req.raw.body && !c.req.raw.bodyUsed) await c.req.raw.arrayBuffer();
 });
 
 // Public and unauthenticated: reports only database reachability and the deployed commit.
