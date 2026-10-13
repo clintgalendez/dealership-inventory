@@ -6,7 +6,13 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['dist', '.wrangler', 'playwright-report', 'test-results', 'worker-configuration.d.ts']),
+  globalIgnores([
+    'dist',
+    '.wrangler',
+    'playwright-report',
+    'test-results',
+    'worker-configuration.d.ts',
+  ]),
   {
     files: ['**/*.{ts,tsx,js,mjs}'],
     extends: [js.configs.recommended, tseslint.configs.recommended],

@@ -58,7 +58,10 @@ export async function createSession(c: Context<AppEnv>, userId: number) {
   const ttl = ttlSeconds(c.env);
   await c.env.DB.batch([
     // Housekeeping: drop this user's expired sessions while we are writing anyway.
-    c.env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND expires_at <= ?').bind(userId, now),
+    c.env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND expires_at <= ?').bind(
+      userId,
+      now,
+    ),
     c.env.DB.prepare(
       'INSERT INTO sessions (id, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)',
     ).bind(await hashToken(token), userId, now, now + ttl * 1000),
@@ -75,7 +78,9 @@ export async function createSession(c: Context<AppEnv>, userId: number) {
 export async function destroySession(c: Context<AppEnv>) {
   const token = getCookie(c, COOKIE_NAME, 'host');
   if (token) {
-    await c.env.DB.prepare('DELETE FROM sessions WHERE id = ?').bind(await hashToken(token)).run();
+    await c.env.DB.prepare('DELETE FROM sessions WHERE id = ?')
+      .bind(await hashToken(token))
+      .run();
   }
   deleteCookie(c, COOKIE_NAME, { prefix: 'host', httpOnly: true, sameSite: 'Strict' });
 }

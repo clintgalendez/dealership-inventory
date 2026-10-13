@@ -6,7 +6,7 @@
   "assets": {
     // Serve the React SPA for unknown paths; only /api/* reaches the Worker first.
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*"],
   },
   "d1_databases": [
     {
@@ -14,14 +14,14 @@
       "database_name": "dealership-inventory",
       // Placeholder until the remote database is created; local dev only needs a stable id.
       "database_id": "00000000-0000-0000-0000-000000000000",
-      "migrations_dir": "migrations"
-    }
+      "migrations_dir": "migrations",
+    },
   ],
   "vars": {
     // Absolute session lifetime. Lower it locally (.dev.vars) to demo expiry.
-    "SESSION_TTL_SECONDS": "28800"
+    "SESSION_TTL_SECONDS": "28800",
   },
   "observability": {
-    "enabled": true
-  }
+    "enabled": true,
+  },
 }

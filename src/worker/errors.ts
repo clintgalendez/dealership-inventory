@@ -31,7 +31,10 @@ export async function parseBody<T extends z.ZodType>(c: Context, schema: T): Pro
   const body: unknown = await c.req.json().catch(() => undefined);
   const result = schema.safeParse(body);
   if (!result.success) {
-    const details = result.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
+    const details = result.error.issues.map((i) => ({
+      path: i.path.join('.'),
+      message: i.message,
+    }));
     throw new ApiError(400, 'VALIDATION_ERROR', 'The request body is invalid.', details);
   }
   return result.data;

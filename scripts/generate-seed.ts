@@ -14,12 +14,42 @@ const dealerships = [
 ];
 
 const users = [
-  { id: 1, dealershipId: 1, email: 'alex.admin@northside.example', name: 'Alex Admin', role: 'admin' },
-  { id: 2, dealershipId: 1, email: 'blair.admin@northside.example', name: 'Blair Admin', role: 'admin' },
-  { id: 3, dealershipId: 1, email: 'casey.viewer@northside.example', name: 'Casey Viewer', role: 'viewer' },
-  { id: 4, dealershipId: 2, email: 'dana.admin@lakeside.example', name: 'Dana Admin', role: 'admin' },
+  {
+    id: 1,
+    dealershipId: 1,
+    email: 'alex.admin@northside.example',
+    name: 'Alex Admin',
+    role: 'admin',
+  },
+  {
+    id: 2,
+    dealershipId: 1,
+    email: 'blair.admin@northside.example',
+    name: 'Blair Admin',
+    role: 'admin',
+  },
+  {
+    id: 3,
+    dealershipId: 1,
+    email: 'casey.viewer@northside.example',
+    name: 'Casey Viewer',
+    role: 'viewer',
+  },
+  {
+    id: 4,
+    dealershipId: 2,
+    email: 'dana.admin@lakeside.example',
+    name: 'Dana Admin',
+    role: 'admin',
+  },
   { id: 5, dealershipId: 2, email: 'eli.admin@lakeside.example', name: 'Eli Admin', role: 'admin' },
-  { id: 6, dealershipId: 2, email: 'finley.viewer@lakeside.example', name: 'Finley Viewer', role: 'viewer' },
+  {
+    id: 6,
+    dealershipId: 2,
+    email: 'finley.viewer@lakeside.example',
+    name: 'Finley Viewer',
+    role: 'viewer',
+  },
 ];
 
 const vehicles = [
@@ -53,7 +83,9 @@ for (const u of users) {
 
 lines.push(
   `INSERT INTO vehicles (id, dealership_id, make, model, year, status, version, updated_at) VALUES ${vehicles
-    .map((v) => row(v.id, v.dealershipId, v.make, v.model, v.year, v.status, 1, '2026-01-01T00:00:00.000Z'))
+    .map((v) =>
+      row(v.id, v.dealershipId, v.make, v.model, v.year, v.status, 1, '2026-01-01T00:00:00.000Z'),
+    )
     .join(', ')};`,
 );
 

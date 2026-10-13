@@ -130,7 +130,10 @@ describe('POST /api/auth/logout', () => {
       method: 'POST',
       cookie,
       rawBody: 'x=1',
-      headers: { Origin: 'https://evil.example', 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        Origin: 'https://evil.example',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     });
 
     expect(res.status).toBe(403);

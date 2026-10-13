@@ -18,7 +18,8 @@ import { getVehicle, listVehicles } from './vehicles';
 
 // Verified when the email is unknown so both failure paths cost the same PBKDF2 work
 // and response timing does not reveal which emails exist.
-const DUMMY_HASH = 'pbkdf2-sha256$100000$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+const DUMMY_HASH =
+  'pbkdf2-sha256$100000$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
 
 const loginSchema = z.object({
   email: z.string().trim().max(254),
@@ -74,9 +75,7 @@ app.get('/api/vehicles/:id{[0-9]+}', requireAuth, async (c) => {
   return c.json({ vehicle });
 });
 
-app.notFound((c) =>
-  c.json({ error: { code: 'NOT_FOUND', message: 'Route not found.' } }, 404),
-);
+app.notFound((c) => c.json({ error: { code: 'NOT_FOUND', message: 'Route not found.' } }, 404));
 
 app.onError((err, c) => {
   if (err instanceof ApiError) {

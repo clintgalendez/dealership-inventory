@@ -1,0 +1,6 @@
+dist/
+.wrangler/
+playwright-report/
+test-results/
+package-lock.json
+worker-configuration.d.ts

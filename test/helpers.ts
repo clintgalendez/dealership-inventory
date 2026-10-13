@@ -25,7 +25,10 @@ type ApiOptions = {
 };
 
 /** Calls the Worker directly, bypassing any frontend checks. Sends Origin like a browser would. */
-export function api(path: string, { method = 'GET', cookie, body, rawBody, ...opts }: ApiOptions = {}) {
+export function api(
+  path: string,
+  { method = 'GET', cookie, body, rawBody, ...opts }: ApiOptions = {},
+) {
   const headers = new Headers({ Origin: ORIGIN });
   if (cookie) headers.set('Cookie', cookie);
   if (body !== undefined || rawBody !== undefined) headers.set('Content-Type', 'application/json');
