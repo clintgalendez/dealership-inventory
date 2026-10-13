@@ -63,21 +63,27 @@ async function readVehicle(cookie: string, id: number): Promise<Vehicle> {
 }
 
 test('health endpoint is up and serving the expected release', async () => {
-  // A new release can take a few seconds to reach every location.
-  for (let attempt = 1; ; attempt++) {
-    const res = await call('/api/health');
+  // A release takes time to reach every edge location (a brand-new workers.dev hostname
+  // can answer one request and 404 the next), so wait for several consecutive healthy
+  // responses from both the API and the SPA before asserting anything else.
+  const REQUIRED_STREAK = 5;
+  let streak = 0;
+  for (let attempt = 1; attempt <= 60 && streak < REQUIRED_STREAK; attempt++) {
+    const [health, page] = await Promise.all([call('/api/health'), call('/')]);
     const ready =
-      res.status === 200 && (!EXPECTED_VERSION || res.body.version === EXPECTED_VERSION);
-    if (ready || attempt === 20) {
-      assert.equal(res.status, 200);
-      assert.deepEqual(Object.keys(res.body).sort(), ['db', 'status', 'version']);
-      assert.equal(res.body.status, 'ok');
-      assert.equal(res.body.db, 'ok');
-      if (EXPECTED_VERSION) assert.equal(res.body.version, EXPECTED_VERSION);
-      return;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+      health.status === 200 &&
+      page.status === 200 &&
+      (!EXPECTED_VERSION || health.body.version === EXPECTED_VERSION);
+    streak = ready ? streak + 1 : 0;
+    await new Promise((resolve) => setTimeout(resolve, ready ? 1000 : 3000));
   }
+
+  const res = await call('/api/health');
+  assert.equal(res.status, 200);
+  assert.deepEqual(Object.keys(res.body).sort(), ['db', 'status', 'version']);
+  assert.equal(res.body.status, 'ok');
+  assert.equal(res.body.db, 'ok');
+  if (EXPECTED_VERSION) assert.equal(res.body.version, EXPECTED_VERSION);
 });
 
 test('frontend is served', async () => {
