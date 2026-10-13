@@ -1,0 +1,12 @@
+DELETE FROM sessions;
+DELETE FROM vehicles;
+DELETE FROM users;
+DELETE FROM dealerships;
+INSERT INTO dealerships (id, name) VALUES (1, 'Northside Motors'), (2, 'Lakeside Auto');
+INSERT INTO users (id, dealership_id, email, name, role, password_hash) VALUES (1, 1, 'alex.admin@northside.example', 'Alex Admin', 'admin', 'pbkdf2-sha256$100000$R8lUyqrQfD5wpfJKb72MFA==$44Q+zpAAYXTDpU9mxZEFhy83TgNYSuU8r8Q50iRjqdw=');
+INSERT INTO users (id, dealership_id, email, name, role, password_hash) VALUES (2, 1, 'blair.admin@northside.example', 'Blair Admin', 'admin', 'pbkdf2-sha256$100000$j5NYqpwUrIOhPbZDFV7Ffw==$ZP1qM8GTdxJrRhVs3y/SOqsMGFoCdPXsTZiBGMXkRSY=');
+INSERT INTO users (id, dealership_id, email, name, role, password_hash) VALUES (3, 1, 'casey.viewer@northside.example', 'Casey Viewer', 'viewer', 'pbkdf2-sha256$100000$jsiAv5OTEn12ehPeZ/NJzw==$SIAUXxpp+MmEAlVhaMLJpx8pfuPKcCAgUmxHurqXZGU=');
+INSERT INTO users (id, dealership_id, email, name, role, password_hash) VALUES (4, 2, 'dana.admin@lakeside.example', 'Dana Admin', 'admin', 'pbkdf2-sha256$100000$rM/r53KtAa1JuMmQeDYzdg==$+LsyAAJg2v/Ida6fJqszrsC1Pu5SleVOQsmiHQhQ8mQ=');
+INSERT INTO users (id, dealership_id, email, name, role, password_hash) VALUES (5, 2, 'eli.admin@lakeside.example', 'Eli Admin', 'admin', 'pbkdf2-sha256$100000$rE4gogkm2evVxHKG6EA7gA==$B9GYdG/4ArlSeMbzlviiITfNXWK72+whJnOXG/kcZYg=');
+INSERT INTO users (id, dealership_id, email, name, role, password_hash) VALUES (6, 2, 'finley.viewer@lakeside.example', 'Finley Viewer', 'viewer', 'pbkdf2-sha256$100000$Pbd8y6+JTPRXYzgIX5pamA==$uewDawFNgr87EB5K0lS0oMblrXmJKpr3aIQ/HGiCm4A=');
+INSERT INTO vehicles (id, dealership_id, make, model, year, status, version, updated_at) VALUES (1, 1, 'Toyota', 'Camry', 2022, 'available', 1, '2026-01-01T00:00:00.000Z'), (2, 1, 'Honda', 'Civic', 2021, 'reserved', 1, '2026-01-01T00:00:00.000Z'), (3, 1, 'Ford', 'F-150', 2023, 'available', 1, '2026-01-01T00:00:00.000Z'), (4, 2, 'Subaru', 'Outback', 2020, 'available', 1, '2026-01-01T00:00:00.000Z'), (5, 2, 'Mazda', 'CX-5', 2022, 'sold', 1, '2026-01-01T00:00:00.000Z'), (6, 2, 'Tesla', 'Model 3', 2023, 'available', 1, '2026-01-01T00:00:00.000Z');

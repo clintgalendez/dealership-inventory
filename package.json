@@ -14,7 +14,12 @@
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
-    "db:migrate:remote": "wrangler d1 migrations apply DB --remote"
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "db:seed:generate": "node scripts/generate-seed.ts",
+    "db:seed:local": "wrangler d1 execute DB --local --file db/seed.sql",
+    "db:seed:remote": "wrangler d1 execute DB --remote --file db/seed.sql",
+    "db:reset:local": "npm run db:migrate:local && npm run db:seed:local",
+    "db:reset:remote": "npm run db:migrate:remote && npm run db:seed:remote"
   },
   "dependencies": {
     "hono": "^4.13.13",
