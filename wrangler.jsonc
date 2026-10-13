@@ -12,8 +12,8 @@
     {
       "binding": "DB",
       "database_name": "dealership-inventory",
-      // Placeholder until the remote database is created; local dev only needs a stable id.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // Not a secret: the id is useless without an API token for the account.
+      "database_id": "28469d5e-20bb-46ad-bb87-ab2ea2b648c0",
       "migrations_dir": "migrations",
     },
   ],
