@@ -48,7 +48,21 @@ app.use('/api/*', secureHeaders(), csrf(), async (c, next) => {
   c.header('Cache-Control', 'no-store');
 });
 
-app.get('/api/health', (c) => c.json({ status: 'ok' }));
+// Public and unauthenticated: reports only database reachability and the deployed commit.
+app.get('/api/health', async (c) => {
+  let db = 'ok';
+  try {
+    await c.env.DB.prepare('SELECT 1').first();
+  } catch (err) {
+    console.error('Health check: database unavailable', err);
+    db = 'unavailable';
+  }
+  const healthy = db === 'ok';
+  return c.json(
+    { status: healthy ? 'ok' : 'degraded', db, version: c.env.GIT_SHA },
+    healthy ? 200 : 503,
+  );
+});
 
 app.post('/api/auth/login', async (c) => {
   const { email, password } = await parseBody(c, loginSchema);
